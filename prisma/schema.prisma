@@ -29,6 +29,8 @@ model User {
   notifications Notification[]
   auditLogs     AuditLog[]
   ledTeams      Team[]              @relation("TeamLeader")
+  calendarEvents CalendarEvent[]
+  dailyNotes    DailyNote[]
 
   @@index([email])
   @@index([teamId])
@@ -208,4 +210,96 @@ model AuditLog {
   @@index([userId])
   @@index([action])
   @@index([createdAt])
+}
+
+// Calendar Event model
+model CalendarEvent {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?   @db.Text
+  startTime   DateTime
+  endTime     DateTime
+  allDay      Boolean   @default(false)
+  location    String?
+  color       String?   @default("#3B82F6") // Hex color for event
+  eventType   EventType @default(MEETING)
+  reminder    Boolean   @default(true)
+  reminderMinutes Int?  @default(15) // Minutes before event to remind
+  isRecurring Boolean   @default(false)
+  recurrenceRule String? // RRULE format for recurring events
+  status      EventStatus @default(SCHEDULED)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([startTime])
+  @@index([status])
+}
+
+enum EventType {
+  MEETING
+  INTERVIEW
+  DEADLINE
+  TRAINING
+  HOLIDAY
+  PERSONAL
+  OTHER
+}
+
+enum EventStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  RESCHEDULED
+}
+
+// Daily Note model
+model DailyNote {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime @db.Date
+  title     String?
+  content   String   @db.Text
+  mood      Mood?    @default(NEUTRAL)
+  tags      String[] // Array of tags for filtering
+  isPrivate Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, date])
+  @@index([userId])
+  @@index([date])
+}
+
+enum Mood {
+  GREAT
+  GOOD
+  NEUTRAL
+  BAD
+  TERRIBLE
+}
+
+// Chat Summary model for HR conversations
+model ChatSummary {
+  id              String   @id @default(uuid())
+  conversationId  String   @unique
+  contactName     String
+  contactPhone    String
+  startDate       DateTime
+  endDate         DateTime
+  messageCount    Int
+  summary         String   @db.Text // LLM-generated summary
+  keyTopics       String[] // Extracted topics
+  sentimentScore  Float?   // -1 to 1
+  actionItems     String[] // Extracted action items
+  llmModel        String?  @default("gemini-pro")
+  generatedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([contactPhone])
+  @@index([generatedAt])
 }

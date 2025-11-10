@@ -187,6 +187,42 @@ export default function DashboardPage() {
                 <span className="ml-3 text-sm font-medium text-gray-900">Notifications</span>
               </Link>
 
+              <Link
+                href="/dashboard/calendar"
+                className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:shadow-md transition"
+              >
+                <div className="flex-shrink-0 bg-blue-100 rounded-md p-2">
+                  <svg className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <span className="ml-3 text-sm font-medium text-gray-900">Calendar</span>
+              </Link>
+
+              <Link
+                href="/dashboard/notes"
+                className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-orange-500 hover:shadow-md transition"
+              >
+                <div className="flex-shrink-0 bg-orange-100 rounded-md p-2">
+                  <svg className="h-5 w-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                </div>
+                <span className="ml-3 text-sm font-medium text-gray-900">Daily Notes</span>
+              </Link>
+
+              <Link
+                href="/dashboard/chat-summary"
+                className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-purple-500 hover:shadow-md transition"
+              >
+                <div className="flex-shrink-0 bg-purple-100 rounded-md p-2">
+                  <svg className="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                  </svg>
+                </div>
+                <span className="ml-3 text-sm font-medium text-gray-900">Chat Summary</span>
+              </Link>
+
               {user?.role === 'ADMIN' && (
                 <>
                   <Link
