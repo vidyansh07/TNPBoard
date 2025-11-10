@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import DashboardLayout from '@/components/DashboardLayout';
+import Link from 'next/link';
 import { BookOpen, Plus, Smile, Meh, Frown, ThumbsUp, ThumbsDown, Save } from 'lucide-react';
 
 interface DailyNote {
@@ -173,11 +173,15 @@ export default function NotesPage() {
   };
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
+            <Link href="/dashboard" className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-2 inline-block">
+              ← Back to Dashboard
+            </Link>
             <h1 className="text-2xl font-bold text-gray-900">Daily Notes</h1>
             <p className="text-gray-600 mt-1">Capture your thoughts and track your day</p>
           </div>
@@ -326,6 +330,7 @@ export default function NotesPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+      </div>
+    </div>
   );
 }

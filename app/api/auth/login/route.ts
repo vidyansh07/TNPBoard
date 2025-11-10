@@ -13,7 +13,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-change-in-producti
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password } = body;
+  const { email, password } = body;
 
     if (!email || !password) {
       return NextResponse.json(
@@ -22,9 +22,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user
+    // Normalize email and find user
+    const normalizedEmail = String(email).trim().toLowerCase();
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
     });
 
     if (!user || !user.passwordHash) {

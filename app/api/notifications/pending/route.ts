@@ -92,8 +92,8 @@ export async function GET(request: NextRequest) {
           userId: user.id,
           type: 'today_events',
           title: `${todayEvents.length} Event${todayEvents.length > 1 ? 's' : ''} Today`,
-          message: `Upcoming events: ${todayEvents.map(e => e.title).join(', ')}`,
-          payload: JSON.stringify({ eventIds: todayEvents.map(e => e.id) }),
+          message: `Upcoming events: ${todayEvents.map((e: { title: string }) => e.title).join(', ')}`,
+          payload: JSON.stringify({ eventIds: todayEvents.map((e: { id: string }) => e.id) }),
         },
       });
       notifications.push(notification);

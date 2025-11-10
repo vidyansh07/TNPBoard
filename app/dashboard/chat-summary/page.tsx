@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import DashboardLayout from '@/components/DashboardLayout';
+import Link from 'next/link';
 import { MessageSquare, TrendingUp, CheckCircle, Sparkles } from 'lucide-react';
 
 interface Conversation {
@@ -53,7 +53,7 @@ export default function ChatSummaryPage() {
         return;
       }
 
-      const response = await fetch('/api/whatsapp/conversations', {
+      const response = await fetch('/api/conversations', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -61,7 +61,7 @@ export default function ChatSummaryPage() {
 
       if (response.ok) {
         const data = await response.json();
-        setConversations(data);
+        setConversations(data.conversations ?? []);
       }
     } catch (error) {
       console.error('Error fetching conversations:', error);
@@ -140,19 +140,21 @@ export default function ChatSummaryPage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-gray-500">Loading conversations...</div>
-        </div>
-      </DashboardLayout>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-500">Loading conversations...</div>
+      </div>
     );
   }
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="space-y-6">
         {/* Header */}
         <div>
+          <Link href="/dashboard" className="text-blue-600 hover:text-blue-700 text-sm font-medium mb-2 inline-block">
+            ← Back to Dashboard
+          </Link>
           <h1 className="text-2xl font-bold text-gray-900">Chat Summaries with HR</h1>
           <p className="text-gray-600 mt-1">AI-powered conversation summaries and insights</p>
         </div>
@@ -316,6 +318,7 @@ export default function ChatSummaryPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+      </div>
+    </div>
   );
 }
