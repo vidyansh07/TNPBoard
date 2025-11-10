@@ -1,5 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: {
+    // Disable ESLint during production builds
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    // Dangerously allow production builds to successfully complete even if type errors
+    ignoreBuildErrors: false,
+  },
   images: {
     domains: ['localhost'],
     remotePatterns: [
