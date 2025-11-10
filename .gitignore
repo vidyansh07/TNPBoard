@@ -1,0 +1,14 @@
+node_modules
+.next
+.env
+.env.local
+.env*.local
+dist
+build
+*.log
+.DS_Store
+coverage
+.vercel
+.turbo
+prisma/migrations
+!prisma/migrations/.gitkeep

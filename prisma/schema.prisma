@@ -1,0 +1,211 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model with role-based access control
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String?
+  role         Role     @default(MEMBER)
+  teamId       String?
+  team         Team?    @relation("TeamMembers", fields: [teamId], references: [id])
+  phone        String?  // E.164 format
+  optIn        Boolean  @default(false) // Consent for personal number tracking
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  assignedTasks Task[]              @relation("AssignedTasks")
+  createdTasks  Task[]              @relation("CreatedTasks")
+  dsrs          DSR[]
+  contacts      WhatsAppContact[]
+  notifications Notification[]
+  auditLogs     AuditLog[]
+  ledTeams      Team[]              @relation("TeamLeader")
+
+  @@index([email])
+  @@index([teamId])
+}
+
+enum Role {
+  ADMIN
+  LEADER
+  MEMBER
+}
+
+// Team model
+model Team {
+  id        String   @id @default(uuid())
+  name      String
+  leaderId  String?
+  leader    User?    @relation("TeamLeader", fields: [leaderId], references: [id])
+  members   User[]   @relation("TeamMembers")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([leaderId])
+}
+
+// Task model with status tracking
+model Task {
+  id            String     @id @default(uuid())
+  title         String
+  description   String?
+  assignedToId  String?
+  assignedTo    User?      @relation("AssignedTasks", fields: [assignedToId], references: [id])
+  assignedById  String?
+  assignedBy    User?      @relation("CreatedTasks", fields: [assignedById], references: [id])
+  status        TaskStatus @default(OPEN)
+  priority      Priority   @default(MEDIUM)
+  dueDate       DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([assignedToId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+enum TaskStatus {
+  OPEN
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// WhatsApp Contact with opt-in tracking
+model WhatsAppContact {
+  id            String                 @id @default(uuid())
+  userId        String?
+  user          User?                  @relation(fields: [userId], references: [id])
+  phoneNumber   String                 @unique // E.164 format
+  name          String?
+  optIn         Boolean                @default(false)
+  optInDate     DateTime?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  conversations WhatsAppConversation[]
+
+  @@index([phoneNumber])
+  @@index([userId])
+}
+
+// WhatsApp Conversation thread
+model WhatsAppConversation {
+  id            String            @id @default(uuid())
+  contactId     String
+  contact       WhatsAppContact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  lastMessageAt DateTime?
+  isArchived    Boolean           @default(false)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  messages      WhatsAppMessage[]
+
+  @@index([contactId])
+  @@index([lastMessageAt])
+}
+
+// WhatsApp Message with media support
+model WhatsAppMessage {
+  id             String               @id @default(uuid())
+  conversationId String
+  conversation   WhatsAppConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  fromNumber     String
+  toNumber       String
+  text           String?              @db.Text
+  mediaUrl       String?
+  mediaType      String?              // image, video, audio, document
+  messageId      String               @unique // Provider message ID
+  timestamp      DateTime
+  direction      MessageDirection
+  status         MessageStatus        @default(SENT)
+  errorMessage   String?
+  metadata       String?              @db.Text // JSON blob for provider-specific data
+  createdAt      DateTime             @default(now())
+
+  @@index([conversationId])
+  @@index([messageId])
+  @@index([timestamp])
+}
+
+enum MessageDirection {
+  IN
+  OUT
+}
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+// Daily Status Report with LLM-generated summary
+model DSR {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  date         DateTime @db.Date
+  rawInputs    String   @db.Text // JSON blob: { tasks, messages, conversations }
+  summary      String   @db.Text // LLM-generated summary
+  llmModel     String?  // Model used for generation
+  generatedBy  String   @default("system") // system | manual
+  status       String   @default("draft") // draft | published
+  errorMessage String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, date])
+  @@index([userId])
+  @@index([date])
+}
+
+// Notification model
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // task_assigned, dsr_ready, message_received
+  title     String
+  message   String   @db.Text
+  payload   String?  @db.Text // JSON blob
+  read      Boolean  @default(false)
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+  @@index([createdAt])
+}
+
+// Audit log for compliance and debugging
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String   // login, webhook_received, dsr_generated, etc.
+  resource  String?  // Resource type affected
+  resourceId String? // Resource ID affected
+  metadata  String?  @db.Text // JSON blob with details
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
